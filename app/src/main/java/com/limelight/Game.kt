@@ -13,6 +13,7 @@ import com.limelight.binding.input.advance_setting.ControllerManager
 import com.limelight.binding.input.advance_setting.KeyboardUIController
 import com.limelight.binding.input.capture.InputCaptureManager
 import com.limelight.binding.input.capture.InputCaptureProvider
+import com.limelight.binding.input.capture.TouchpadCompatibilityStore
 import com.limelight.binding.input.touch.AbsoluteTouchContext
 import com.limelight.binding.input.touch.NativeTouchContext
 import com.limelight.binding.input.touch.RelativeTouchContext
@@ -118,6 +119,31 @@ class Game : Activity(), SurfaceHolder.Callback,
     OnSystemUiVisibilityChangeListener, GameGestures, StreamView.InputCallbacks,
     PerfOverlayListener, UsbDriverService.UsbDriverStateListener, View.OnKeyListener,
     KeyboardAccessibilityService.KeyEventCallback {
+
+    private var routingCompatibilityMultiTouch = false
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        val device = event.device
+        val startsCompatibilityMultiTouch = event.pointerCount >= 2 &&
+            event.getToolType(0) == MotionEvent.TOOL_TYPE_FINGER &&
+            device != null && TouchpadCompatibilityStore.isConfigured(this, device)
+        if (startsCompatibilityMultiTouch) {
+            routingCompatibilityMultiTouch = true
+        }
+
+        if (routingCompatibilityMultiTouch && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+            ::touchInputHandler.isInitialized
+        ) {
+            val handled = touchInputHandler.handleMotionEvent(null, event)
+            if (event.actionMasked == MotionEvent.ACTION_UP ||
+                event.actionMasked == MotionEvent.ACTION_CANCEL
+            ) {
+                routingCompatibilityMultiTouch = false
+            }
+            if (handled) return true
+        }
+        return super.dispatchTouchEvent(event)
+    }
 
     // 这个标志位用于区分事件是来自无障碍服务还是来自UI（如StreamView）
     var isEventFromAccessibilityService = false

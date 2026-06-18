@@ -66,6 +66,10 @@ object TouchpadCompatibilityStore {
         }
     }
 
+    fun isConfigured(context: Context, device: InputDevice): Boolean {
+        return load(context).any { it.matches(device) }
+    }
+
     internal fun encode(devices: List<TouchpadCompatibilityDevice>): String {
         val array = JSONArray()
         devices.forEach { device ->
