@@ -674,6 +674,10 @@
             android:key="hardware_key_mappings"
             android:title="@string/title_hardware_key_mappings"
             android:summary="@string/summary_hardware_key_mappings" />
+        <Preference
+            android:key="touchpad_compatibility_devices"
+            android:title="@string/title_touchpad_compatibility_devices"
+            android:summary="@string/summary_touchpad_compatibility_devices" />
         <CheckBoxPreference
             android:key="checkbox_mouse_middle"
             android:title="@string/title_fix_mouse_middle"

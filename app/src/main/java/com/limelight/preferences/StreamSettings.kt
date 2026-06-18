@@ -26,6 +26,7 @@ import android.util.DisplayMetrics
 import android.util.Log
 import android.view.Display
 import android.view.DisplayCutout
+import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -72,6 +73,8 @@ import com.limelight.binding.input.advance_setting.config.PageConfigController
 import com.limelight.binding.input.advance_setting.sqlite.SuperConfigDatabaseHelper
 import com.limelight.binding.input.HardwareKeyMapping
 import com.limelight.binding.input.HardwareKeyMappingStore
+import com.limelight.binding.input.capture.TouchpadCompatibilityDevice
+import com.limelight.binding.input.capture.TouchpadCompatibilityStore
 import com.limelight.binding.video.MediaCodecHelper
 import com.limelight.services.KeyboardAccessibilityService
 import com.limelight.utils.AspectRatioConverter
@@ -264,6 +267,86 @@ class StreamSettings : AppCompatActivity(), KeyboardAccessibilityService.KeyEven
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
+    }
+
+    fun showTouchpadCompatibilityDevices() {
+        val devices = TouchpadCompatibilityStore.load(this)
+        val labels = devices.map(::touchpadCompatibilityLabel).toMutableList()
+        labels.add(getString(R.string.touchpad_compatibility_add))
+        if (devices.isNotEmpty()) labels.add(getString(R.string.touchpad_compatibility_clear))
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.title_touchpad_compatibility_devices)
+            .setItems(labels.toTypedArray()) { _, index ->
+                when {
+                    index < devices.size -> confirmDeleteTouchpadCompatibilityDevice(devices[index])
+                    index == devices.size -> showTouchpadCompatibilityDevicePicker()
+                    else -> {
+                        TouchpadCompatibilityStore.clear(this)
+                        showTouchpadCompatibilityDevices()
+                    }
+                }
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun showTouchpadCompatibilityDevicePicker() {
+        val configured = TouchpadCompatibilityStore.load(this)
+        val candidates = InputDevice.getDeviceIds()
+            .asSequence()
+            .mapNotNull { InputDevice.getDevice(it) }
+            .filter(::isPointerDevice)
+            .filterNot { device -> configured.any { it.matches(device) } }
+            .distinctBy { it.descriptor.ifBlank { "${it.vendorId}:${it.productId}:${it.name}" } }
+            .sortedBy { it.name.lowercase(Locale.getDefault()) }
+            .toList()
+
+        if (candidates.isEmpty()) {
+            Toast.makeText(this, R.string.touchpad_compatibility_no_devices, Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.touchpad_compatibility_choose_device)
+            .setItems(candidates.map(::inputDeviceLabel).toTypedArray()) { _, index ->
+                TouchpadCompatibilityStore.save(
+                    this,
+                    TouchpadCompatibilityStore.from(candidates[index])
+                )
+                Toast.makeText(this, R.string.touchpad_compatibility_saved, Toast.LENGTH_SHORT).show()
+                showTouchpadCompatibilityDevices()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun confirmDeleteTouchpadCompatibilityDevice(device: TouchpadCompatibilityDevice) {
+        AlertDialog.Builder(this)
+            .setTitle(touchpadCompatibilityLabel(device))
+            .setMessage(R.string.touchpad_compatibility_delete)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                TouchpadCompatibilityStore.remove(this, device)
+                showTouchpadCompatibilityDevices()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun isPointerDevice(device: InputDevice): Boolean {
+        return device.supportsSource(InputDevice.SOURCE_MOUSE) ||
+            device.supportsSource(InputDevice.SOURCE_MOUSE_RELATIVE) ||
+            device.supportsSource(InputDevice.SOURCE_TOUCHPAD)
+    }
+
+    private fun inputDeviceLabel(device: InputDevice): String {
+        val ids = "%04x:%04x".format(device.vendorId, device.productId)
+        return "${device.name} ($ids)"
+    }
+
+    private fun touchpadCompatibilityLabel(device: TouchpadCompatibilityDevice): String {
+        val ids = "%04x:%04x".format(device.vendorId, device.productId)
+        return "${device.name} ($ids)"
     }
 
     private fun beginHardwareKeyCapture() {
@@ -2711,6 +2794,12 @@ class StreamSettings : AppCompatActivity(), KeyboardAccessibilityService.KeyEven
             findPreference<Preference>("hardware_key_mappings")!!.onPreferenceClickListener =
                     Preference.OnPreferenceClickListener {
                         (requireActivity() as StreamSettings).showHardwareKeyMappings()
+                        true
+                    }
+
+            findPreference<Preference>("touchpad_compatibility_devices")!!.onPreferenceClickListener =
+                    Preference.OnPreferenceClickListener {
+                        (requireActivity() as StreamSettings).showTouchpadCompatibilityDevices()
                         true
                     }
 

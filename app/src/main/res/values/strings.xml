@@ -1045,6 +1045,14 @@ Tap again to replace it.</string>
     <string name="hardware_key_mapping_saved">Key mapping saved</string>
     <string name="hardware_key_mapping_delete">Delete this mapping?</string>
     <string name="hardware_key_mapping_accessibility_hint">Enable the Moonlight V+ keyboard accessibility service to learn system-reserved keys.</string>
+    <string name="title_touchpad_compatibility_devices">Touchpad compatibility devices</string>
+    <string name="summary_touchpad_compatibility_devices">Select touchpads that stop working with pointer capture</string>
+    <string name="touchpad_compatibility_add">Add connected device</string>
+    <string name="touchpad_compatibility_clear">Clear all devices</string>
+    <string name="touchpad_compatibility_choose_device">Choose a connected touchpad</string>
+    <string name="touchpad_compatibility_no_devices">No unconfigured pointer devices are connected</string>
+    <string name="touchpad_compatibility_saved">Touchpad compatibility device saved</string>
+    <string name="touchpad_compatibility_delete">Remove this compatibility device?</string>
     <string name="summary_fix_mouse_middle">On some devices the mouse middle button may be recognized as the back key. Enable this to try to fix the issue.</string>
 
     <!-- Fix mouse scroll wheel -->

@@ -1337,4 +1337,12 @@
     <string name="hardware_key_mapping_saved">按键映射已保存</string>
     <string name="hardware_key_mapping_delete">确定删除此映射吗？</string>
     <string name="hardware_key_mapping_accessibility_hint">如需学习系统保留键，请启用 Moonlight V+ 键盘无障碍服务。</string>
+    <string name="title_touchpad_compatibility_devices">触控板兼容设备</string>
+    <string name="summary_touchpad_compatibility_devices">选择启用指针捕获后会失效的触控板</string>
+    <string name="touchpad_compatibility_add">添加已连接设备</string>
+    <string name="touchpad_compatibility_clear">清空全部设备</string>
+    <string name="touchpad_compatibility_choose_device">选择已连接的触控板</string>
+    <string name="touchpad_compatibility_no_devices">没有未配置的指针设备</string>
+    <string name="touchpad_compatibility_saved">已保存触控板兼容设备</string>
+    <string name="touchpad_compatibility_delete">确定移除此兼容设备吗？</string>
 </resources>
